@@ -48,6 +48,7 @@ class MyClient(discord.Client):
         await self.tree.sync()
 
 
+
 intents = discord.Intents.default()
 client = MyClient(intents=intents)
 
@@ -159,13 +160,13 @@ class BobaOrderModal(discord.ui.Modal, title='Boba Order'):
         
 
     async def on_submit(self, interaction: discord.Interaction):
-            view = self.to_view(interaction)
+        view = self.to_view(interaction)
     
-            # Send the order to the Mason's dm's
-            member = await interaction.client.fetch_user(int(MASON_DISCORD_ID))
-            channel = await member.create_dm()
-            await channel.send(view=view)
-            await interaction.response.send_message('Thank you for ordering with Moober Eats, your order got sent to Mason and he is getting your food', ephemeral=True)
+        # Send the order to the Mason's dm's
+        member = await interaction.client.fetch_user(int(MASON_DISCORD_ID))
+        channel = await member.create_dm()
+        await channel.send(view=view)
+        await interaction.response.send_message('Thank you for ordering with Moober Eats, your order got sent to Mason and he is getting your food', ephemeral=True)
     
     async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
         await interaction.response.send_message('Mason coded something wrong T-T sorry you have to order manually', ephemeral=True)
