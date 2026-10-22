@@ -19,10 +19,11 @@ def required_env(name: str) -> str:
 
 MOOBER_TOKEN = required_env('MOOBER_TOKEN')
 SERVER_ID = required_env('TEST_SERVER_ID')
+CHANNEL_ID = required_env('CHANNEL_ID')
 MASON_DISCORD_ID = required_env('MASON_DISCORD_ID')
 MY_GUILD = discord.Object(id=int(SERVER_ID)) 
 MASON_DM = discord.Object(id=int(MASON_DISCORD_ID))
-REPORTS_CHANNEL_ID = 0
+REPORTS_CHANNEL_ID = required_env('CHANNEL_ID')
 
 
 class MyClient(discord.Client):
@@ -313,7 +314,7 @@ class DeliveryModal(discord.ui.Modal, title='Delivery Update'):
         view = self.to_view(interaction)
 
         # Send the order to the discord
-        channel = client.get_channel(int(SERVER_ID))  #  Gets channel from internal cache Sends message to channel
+        channel = client.get_channel(int(CHANNEL_ID))  #  Gets channel from internal cache Sends message to channel
         if not isinstance(channel, discord.TextChannel):
             raise RuntimeError("It has to be text channel")
 
