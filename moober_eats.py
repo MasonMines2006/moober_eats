@@ -1,10 +1,13 @@
 import random
 import traceback
 
+import aiosqlite
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
 import os
+
+from database import DatabaseManager
 
 load_dotenv()
 
@@ -23,6 +26,11 @@ MASON_DISCORD_ID = required_env('MASON_DISCORD_ID')
 MY_GUILD = discord.Object(id=int(SERVER_ID)) 
 MASON_DM = discord.Object(id=int(MASON_DISCORD_ID))
 REPORTS_CHANNEL_ID = required_env('CHANNEL_ID')
+DB_PATH = required_env('DB_PATH')
+
+HERE = os.path.dirname(__file__)
+schema_path = os.path.join(HERE, "database", "schema.sql")
+
 
 
 class MyClient(discord.Client):
@@ -44,8 +52,26 @@ class MyClient(discord.Client):
     # Instead of specifying a guild to every command, we copy over our global commands instead.
     # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
     async def setup_hook(self):
+        # Initialize our database
+        self.db_connection = await aiosqlite.connect(DB_PATH)
+        self.db_connection.row_factory = aiosqlite.Row
+        with open(schema_path) as f: 
+            schema_sql = f.read()
+
+        connection = await aiosqlite.connect(DB_PATH)
+        connection.row_factory = aiosqlite.Row              
+
+        await connection.executescript(schema_sql)
+        self.db = DatabaseManager(connection=self.db_connection)
+
         # This copies the global commands over to your guild.
         await self.tree.sync()
+
+
+    async def close(self):
+        await self.db_connection.close()
+        await super().close()
+        
 
 
 
@@ -134,7 +160,7 @@ class BobaOrderModal(discord.ui.Modal, title='Boba Order'):
         toppings = self.toppings.component.values[0] if self.toppings.component.values else "custom"
         size = self.size.component.values[0] if self.size.component.values else "custom"
 
-
+    
 
         view = discord.ui.LayoutView()
         container = discord.ui.Container()
@@ -371,6 +397,8 @@ async def delivery(interaction: discord.Interaction):
     # Since modals require an interaction, they cannot be done as a response to a text command.
     # They can only be done as a response to either an application command or a button press.
     await interaction.response.send_modal(DeliveryModal())
+
+
 
 
 client.run(MOOBER_TOKEN)
