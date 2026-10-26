@@ -6,7 +6,7 @@ class DatabaseManager:
         self.connection = connection
 
     async def create_order(
-        self, user_id: int, shop: str, order_name: str, size: str, topping: str, description: str
+        self, user_id: int, shop: str = '-', order_name: str = '-', size: str = '-', topping: str = '-', description: str = '-', order_type: str = "-"
     ) -> int | None:
         """
         This function will create an order in the database.
@@ -17,9 +17,10 @@ class DatabaseManager:
         :param size: The size of the order.
         :param topping: The topping of the order.
         :param description: The description of the order.
+        :param order_type: The type of the order (e.g., 'munchie' or 'custom').
         """
         cursor = await self.connection.execute(
-            "INSERT INTO orders(user_id, shop, order_name, size, topping, description, created_at, order_type) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 'menu')",
+            "INSERT INTO orders(user_id, shop, order_name, size, topping, description, created_at, order_type) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)",
             (
                 user_id,
                 shop,
@@ -27,30 +28,28 @@ class DatabaseManager:
                 size,
                 topping,
                 description,
+                order_type,
             ),
         )
         await self.connection.commit()
         return cursor.lastrowid
 
-    async def create_custom_order(
-        self, user_id: int, description: str
-    ) -> int | None:
+    async def get_order_by_id(
+        self, id: int
+    ) -> dict | None:
         """
-        This function will create a custom order in the database.
+        This function will retrieve an order by its ID from the database.
 
-        :param user_id: The ID of the user associated with the custom order.
-        :param description: The description of the custom order.
-        :return: The ID of the newly created custom order, or None if creation failed.
+        :param id: The ID of the order in the database.
         """
         cursor = await self.connection.execute(
-            "INSERT INTO orders(user_id, description, created_at, order_type) VALUES (?, ?, CURRENT_TIMESTAMP, 'custom')",
-            (
-                user_id,
-                description,
-            ),
+            "SELECT * FROM orders WHERE id = ?",
+            (id,),
         )
-        await self.connection.commit()
-        return cursor.lastrowid 
+        row = await cursor.fetchone()
+        return dict(row) if row else None
+
+    
         
     async def update_order_status(
         self, id: int, status: str
@@ -94,7 +93,7 @@ class DatabaseManager:
             ) -> list:
                 """
                 This function will retrieve recent orders for a user from the database.
-        
+
                 :param user_id: The ID of the user in the database.
                 :param limit: The maximum number of orders to retrieve.
                 """

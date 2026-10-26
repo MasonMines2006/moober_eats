@@ -13,3 +13,8 @@ primary_region = 'iad'
 [[vm]]
   memory = '256mb'
   cpus = 1
+
+
+[mounts]
+  source = "moober_data"
+  destination = "/data"

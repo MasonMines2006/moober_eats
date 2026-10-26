@@ -16,3 +16,9 @@ I also don't know? read it I guess
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
 
+
+
+python -m src.moober_eats
+fly apps restart moober-eats
+fly scale count 0 -a moober-eats
+fly scale count 1 -a moober-eats
