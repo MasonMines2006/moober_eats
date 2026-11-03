@@ -33,6 +33,8 @@ class MyClient(discord.Client):
             schema_sql = f.read()
         await self.db_connection.executescript(schema_sql)
         self.db = DatabaseManager(connection=self.db_connection)
+        
+        await self.tree.sync()
 
     async def close(self):
         await self.db_connection.close()
