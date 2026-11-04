@@ -407,9 +407,9 @@ class CustomOrderModal(discord.ui.Modal, title="Custom Order"):
 class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
     def __init__(self, deliveries: list = []):
         super().__init__()
-        self.delivery = discord.ui.RadioGroup(
+        self.delivery = discord.ui.Select(
             options=[
-                discord.RadioGroupOption(
+                discord.SelectOption(
                     label=(
                         delivery["shop"]
                         + " - "
@@ -480,7 +480,7 @@ class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
         self, interaction: discord.Interaction, old_order: dict
     ) -> discord.ui.LayoutView:
         # Tell the type checker what our components are...
-        assert isinstance(self.delivery.value, str)
+
         shop = old_order["shop"]
         boba_type = old_order["order_name"]
         toppings = old_order["topping"]
@@ -519,9 +519,13 @@ class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
         return view
 
     async def on_submit(self, interaction: discord.Interaction):
+
         client = interaction.client
         assert isinstance(client, MyClient)
-        delivery_value = self.delivery.value
+        assert isinstance(self.delivery, (discord.ui.Select, discord.ui.RadioGroup))
+        assert isinstance(self.delivery.values[0], str)
+
+        delivery_value = self.delivery.values[0]
         assert delivery_value is not None
         old_order_id = int(delivery_value)
         old_order = await client.db.get_order_by_id(old_order_id)
@@ -530,43 +534,25 @@ class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
         view = self.to_view(interaction, old_order=old_order)
 
         # Send the order to the discord
-        test_channel = client.get_channel(
-            int(CHANNEL_ID)
-        )  #  Gets channel from internal cache Sends message to channel
-        moober_channel = client.get_channel(
-            int(MOOBER_EATS_CHANNEL_ID)
-        )  #  Gets channel from internal cache Sends message to channel
+        user_id = old_order["user_id"]
+        user = await interaction.client.fetch_user(int(user_id))
+        user_channel = await user.create_dm()
 
-        if not isinstance(test_channel, discord.TextChannel):
-            raise RuntimeError("It has to be text channel")
-        if not isinstance(moober_channel, discord.TextChannel):
-            raise RuntimeError("It has to be text channel")
-
-        await test_channel.send(view=view)
-        await moober_channel.send(view=view)
+        if not isinstance(user_channel, discord.DMChannel):
+            raise TypeError("It has to be a DM channel")
 
         duration_component = self.duration.component
         assert isinstance(duration_component, discord.ui.Select)
         if duration_component.values[0] == "Here!":
             gif = random.choice(list(delivering_gifs.values()))
-            await test_channel.send(gif)
-            delivery_value = self.delivery.value
-            assert delivery_value is not None
+            await user_channel.send(gif)
             order_id = int(delivery_value)
             await client.db.update_order_status(id=order_id, status="delivered")
+            await user_channel.send(view=view)
         else:
             gif = random.choice(list(maomao_success.values()))
-            await test_channel.send(gif)
-        if duration_component.values[0] == "Here!":
-            gif = random.choice(list(delivering_gifs.values()))
-            await moober_channel.send(gif)
-            delivery_value = self.delivery.value
-            assert delivery_value is not None
-            order_id = int(delivery_value)
-            await client.db.update_order_status(id=order_id, status="delivered")
-        else:
-            gif = random.choice(list(maomao_success.values()))
-            await moober_channel.send(gif)
+            await user_channel.send(gif)
+            await user_channel.send(view=view)
 
         await interaction.response.send_message(
             "Thank you for updating Joan!", ephemeral=True
@@ -668,29 +654,55 @@ class OnlineOrderModal(discord.ui.Modal, title="Online Order modal"):
 class PastDeliveryModal(discord.ui.Modal, title="Past Delivery Update"):
     def __init__(self, deliveries: list = []):
         super().__init__()
-        self.delivery = discord.ui.RadioGroup(
-            options=[
-                discord.RadioGroupOption(
-                    label=(delivery["shop"] + " - " + delivery["order_name"]),
-                    value=str(delivery["id"]),
-                )
-                for delivery in deliveries
-            ]
-        )
-        self.add_item(
-            discord.ui.Label(
-                text="Delivery",
-                description="Which order is it?",
-                component=self.delivery,
+        if len(deliveries) == 1:
+            self.delivery = discord.ui.Select(
+                options=[
+                    discord.SelectOption(
+                        label=(
+                            deliveries[0]["shop"]
+                            + " - "
+                            + deliveries[0]["order_name"]
+                            + f" ({deliveries[0]['status']})"
+                        ),
+                        value=str(deliveries[0]["id"]),
+                    )
+                ]
             )
-        )
+
+            self.add_item(
+                discord.ui.Label(
+                    text="Delivery",
+                    description="Which order is it?",
+                    component=self.delivery,
+                )
+            )
+        else:
+            self.delivery = discord.ui.RadioGroup(
+                options=[
+                    discord.RadioGroupOption(
+                        label=(delivery["shop"] + " - " + delivery["order_name"]),
+                        value=str(delivery["id"]),
+                    )
+                    for delivery in deliveries
+                ]
+            )
+            self.add_item(
+                discord.ui.Label(
+                    text="Delivery",
+                    description="Which order is it?",
+                    component=self.delivery,
+                )
+            )
 
     def to_view(
         self, interaction: discord.Interaction, old_order: dict[str, str]
     ) -> discord.ui.LayoutView:
         # Tell the type checker what our components are...
-
-        assert isinstance(self.delivery.value, str)
+        if isinstance(self.delivery, discord.ui.Select):
+            self.delivery = str(old_order["id"])
+        else:
+            assert isinstance(self.delivery, discord.ui.RadioGroup)
+            assert isinstance(self.delivery.value, str)
         shop = old_order["shop"]
         boba_type = old_order["order_name"]
         toppings = old_order["topping"]
@@ -711,8 +723,13 @@ class PastDeliveryModal(discord.ui.Modal, title="Past Delivery Update"):
 
         client = interaction.client
         assert isinstance(client, MyClient)
-        delivery_value = self.delivery.value
-        assert delivery_value is not None
+        if isinstance(self.delivery, discord.ui.Select):
+            assert self.delivery.values
+            delivery_value = self.delivery.values[0]
+        else:
+            assert isinstance(self.delivery, discord.ui.RadioGroup)
+            delivery_value = self.delivery.value
+        assert isinstance(delivery_value, str)
         old_order_id = int(delivery_value)
         old_order = await client.db.get_order_by_id(old_order_id)
         assert old_order is not None
@@ -749,5 +766,6 @@ class PastDeliveryModal(discord.ui.Modal, title="Past Delivery Update"):
             "Mason coded something wrong T-T sorry you have to order manually",
             ephemeral=True,
         )
+        assert isinstance(self.delivery, (discord.ui.Select, discord.ui.RadioGroup))
         gif = random.choice(list(jinshi_fail_gifs.values()))
         await interaction.followup.send(gif)

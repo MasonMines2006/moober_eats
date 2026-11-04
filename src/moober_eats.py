@@ -11,6 +11,7 @@ from src.modals import (
     PastDeliveryModal,
 )
 from src.secret_imports import (
+    MASON_DISCORD_ID,
     MOOBER_TOKEN,
 )
 
@@ -95,20 +96,21 @@ async def re_order(interaction: discord.Interaction):
 
 @client.tree.command(description="Update delivery status.")
 async def delivery(interaction: discord.Interaction):
+
     # Send the modal with an instance of our `DeliveryUpdateModal` class
     # Since modals require an interaction, they cannot be done as a response to a text command.
     # They can only be done as a response to either an application command or a button press.
+    if interaction.user.id != int(MASON_DISCORD_ID):
+        await interaction.response.send_message(
+            "sorry, only mason can be moober eats boy lol.", ephemeral=True
+        )
+        return
     client = interaction.client
     assert isinstance(client, MyClient)
     deliveries = await client.db.get_open_orders(5)
     if not deliveries:
         await interaction.response.send_message(
             "u need to order something first lol", ephemeral=True
-        )
-        return
-    if len(deliveries) == 1:
-        await interaction.response.send_message(
-            "u need to order at least two things lol", ephemeral=True
         )
         return
 
@@ -130,11 +132,6 @@ async def past_orders(interaction: discord.Interaction):
     if not recent_orders:
         await interaction.response.send_message(
             "u need to order something first lol", ephemeral=True
-        )
-        return
-    if len(recent_orders) == 1:
-        await interaction.response.send_message(
-            "u need to order at least two things lol", ephemeral=True
         )
         return
     lines = []
