@@ -147,7 +147,9 @@ async def whats_next(interaction: discord.Interaction):
     working_gif = jinshi_gifs.get("working")
     await interaction.response.send_message(working_gif, ephemeral=True)
     await interaction.followup.send(
-        "I'm working on a lot of things! sorry they take so long. \n Order Update: have orders actualy complete an order (rly hard)\n Simple Order Update: redirect to link of where youre ordering",
+        "I'm working on a lot of things! sorry they take so long. "
+        "\n Order Update: have orders actualy complete an order (rly hard)\n "
+        "Better UI/UX: the bot is pretty uggo so make it look more pretty and user friendly. Like a better app.",
         ephemeral=True,
     )
 
