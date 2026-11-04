@@ -240,12 +240,24 @@ class MunchieOrderModal(discord.ui.Modal, title="Munchie Order"):
             ],
         ),
     )
+    notes = discord.ui.Label(
+        text="Notes",
+        description="Other notes/custom orders",
+        component=discord.ui.TextInput(
+            style=discord.TextStyle.paragraph,
+            placeholder="Add notes or details here for ur order.",
+            max_length=2000,
+            required=False,
+        ),
+    )
+
     footer = discord.ui.TextDisplay("thank you for ordering with moober eats :)))")
 
     def to_view(self, interaction: discord.Interaction) -> discord.ui.LayoutView:
         # Tell the type checker what our components are...
         assert isinstance(self.shop.component, discord.ui.Select)
         assert isinstance(self.munchie_type.component, discord.ui.Select)
+        assert isinstance(self.notes.component, discord.ui.TextInput)
         assert isinstance(self.footer, discord.ui.TextDisplay)
 
         shop = self.shop.component.values[0] if self.shop.component.values else "-"
@@ -254,6 +266,7 @@ class MunchieOrderModal(discord.ui.Modal, title="Munchie Order"):
             if self.munchie_type.component.values
             else "-"
         )
+        notes = self.notes.component.value if self.notes.component.value else "-"
 
         view = discord.ui.LayoutView()
         container = discord.ui.Container()
@@ -270,6 +283,8 @@ class MunchieOrderModal(discord.ui.Modal, title="Munchie Order"):
             container.add_item(discord.ui.TextDisplay(f"Restaurant: {shop}"))
         if munchie_type:
             container.add_item(discord.ui.TextDisplay(f"### Munchie: {munchie_type}"))
+        if notes:
+            container.add_item(discord.ui.TextDisplay(f"### Notes: {notes}"))
 
         container.add_item(footer)
         return view
@@ -283,12 +298,14 @@ class MunchieOrderModal(discord.ui.Modal, title="Munchie Order"):
         munchie_type = self.munchie_type.component
         assert isinstance(munchie_type, discord.ui.Select)
         assert isinstance(shop_component, discord.ui.Select)
+        assert isinstance(self.notes.component, discord.ui.TextInput)
 
         await client.db.create_order(
             user_id=interaction.user.id,
             order_name=munchie_type.values[0],
             shop=shop_component.values[0],
             order_type="munchie",
+            description=self.notes.component.value,
         )
 
         # Send the order to the Mason's dm's

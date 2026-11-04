@@ -101,6 +101,11 @@ async def delivery(interaction: discord.Interaction):
     client = interaction.client
     assert isinstance(client, MyClient)
     deliveries = await client.db.get_recent_orders(interaction.user.id, 5)
+    if not deliveries:
+        await interaction.response.send_message(
+            "u need to order something first lol", ephemeral=True
+        )
+        return
     await interaction.response.send_modal(DeliveryModal(deliveries=deliveries))
 
 
