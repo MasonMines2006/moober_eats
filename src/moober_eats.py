@@ -106,6 +106,12 @@ async def delivery(interaction: discord.Interaction):
             "u need to order something first lol", ephemeral=True
         )
         return
+    if len(deliveries) == 1:
+        await interaction.response.send_message(
+            "u need to order at least two things lol", ephemeral=True
+        )
+        return
+
     await interaction.response.send_modal(DeliveryModal(deliveries=deliveries))
 
 
@@ -124,6 +130,11 @@ async def past_orders(interaction: discord.Interaction):
     if not recent_orders:
         await interaction.response.send_message(
             "u need to order something first lol", ephemeral=True
+        )
+        return
+    if len(recent_orders) == 1:
+        await interaction.response.send_message(
+            "u need to order at least two things lol", ephemeral=True
         )
         return
     lines = []
