@@ -404,8 +404,6 @@ class CustomOrderModal(discord.ui.Modal, title="Custom Order"):
         await interaction.followup.send(gif, ephemeral=True)
 
 
-# Define a modal dialog for reporting issues or feedback
-# Define a modal dialog for reporting issues or feedback
 class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
     def __init__(self, deliveries: list = []):
         super().__init__()

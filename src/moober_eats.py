@@ -100,7 +100,7 @@ async def delivery(interaction: discord.Interaction):
     # They can only be done as a response to either an application command or a button press.
     client = interaction.client
     assert isinstance(client, MyClient)
-    deliveries = await client.db.get_recent_orders(interaction.user.id, 5)
+    deliveries = await client.db.get_open_orders(5)
     if not deliveries:
         await interaction.response.send_message(
             "u need to order something first lol", ephemeral=True

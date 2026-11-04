@@ -102,3 +102,16 @@ class DatabaseManager:
         )
         new_list = await cursor.fetchall()
         return [dict(row) for row in new_list]
+
+    async def get_open_orders(self, limit: int = 5) -> list:
+        """
+        This function will retrieve open orders from the database.
+
+        :param limit: The maximum number of orders to retrieve.
+        """
+        cursor = await self.connection.execute(
+            "SELECT * FROM orders WHERE status = 'ordered' ORDER BY id DESC LIMIT ?",
+            (limit,),
+        )
+        new_list = await cursor.fetchall()
+        return [dict(row) for row in new_list]
