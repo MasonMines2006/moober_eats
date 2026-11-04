@@ -16,6 +16,7 @@ from src.links import (
 from src.secret_imports import (
     CHANNEL_ID,
     MASON_DISCORD_ID,
+    MOOBER_EATS_CHANNEL_ID,
 )
 
 HERE = os.path.dirname(__file__)
@@ -531,25 +532,43 @@ class DeliveryModal(discord.ui.Modal, title="Delivery Update"):
         view = self.to_view(interaction, old_order=old_order)
 
         # Send the order to the discord
-        channel = client.get_channel(
+        moober_channel = client.get_channel(
+            int(MOOBER_EATS_CHANNEL_ID)
+        )  #  Gets channel from internal cache Sends message to channel
+        test_channel = client.get_channel(
             int(CHANNEL_ID)
         )  #  Gets channel from internal cache Sends message to channel
-        if not isinstance(channel, discord.TextChannel):
+        if not isinstance(moober_channel, discord.TextChannel):
+            raise RuntimeError("It has to be text channel")
+        if not isinstance(test_channel, discord.TextChannel):
             raise RuntimeError("It has to be text channel")
 
-        await channel.send(view=view)
+        await moober_channel.send(view=view)
+        await test_channel.send(view=view)
+
         duration_component = self.duration.component
         assert isinstance(duration_component, discord.ui.Select)
         if duration_component.values[0] == "Here!":
             gif = random.choice(list(delivering_gifs.values()))
-            await channel.send(gif)
+            await moober_channel.send(gif)
             delivery_value = self.delivery.value
             assert delivery_value is not None
             order_id = int(delivery_value)
             await client.db.update_order_status(id=order_id, status="delivered")
         else:
             gif = random.choice(list(maomao_success.values()))
-            await channel.send(gif)
+            await moober_channel.send(gif)
+
+        if duration_component.values[0] == "Here!":
+            gif = random.choice(list(delivering_gifs.values()))
+            await test_channel.send(gif)
+            delivery_value = self.delivery.value
+            assert delivery_value is not None
+            order_id = int(delivery_value)
+            await client.db.update_order_status(id=order_id, status="delivered")
+        else:
+            gif = random.choice(list(maomao_success.values()))
+            await test_channel.send(gif)
 
         await interaction.response.send_message(
             "Thank you for updating Joan!", ephemeral=True
