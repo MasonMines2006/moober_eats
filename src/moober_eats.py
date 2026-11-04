@@ -165,7 +165,10 @@ async def changelog(interaction: discord.Interaction):
         "image online (that was actually a gif I had to screenshot) of the word MOVE in the uber logo. I combined them together in google slides and boom: i had a logo. \n"
         "**First Commit:** The first time I pushed anything official to the github repo. Most of it was in a test folder I called 'messing around'. I had to "
         "get rid of everything I had learned about coding discord bots in typescript/javascript, because there was a much easier library called Discord.UI in python "
-        "that the tool is built off of today. Most of it was me playing with the discord api and the little 'getting started' tutorial codes that they have. \n"
+        "that the tool is built off of today. Most of it was me playing with the discord api and the little 'getting started' tutorial codes that they have. \n",
+        ephemeral=True,
+    )
+    await interaction.followup.send(
         "**Getting Started:** This is where I started getting serious about making it a fully working app. I messaged my old RedHat friend Alex Oladele (who is the goat btw)"
         ", and he helped give me ideas on how to work on my bot. I remembered from a convo we had that he gave a whole conference talk on making discord bots, so "
         "I messaged him asking how the dice bot was going and how I could deploy mine. We had a great convo where he reccomended me Fly.io, a really cheap deployment platform "
@@ -174,7 +177,10 @@ async def changelog(interaction: discord.Interaction):
         "**Cleaning up:** This was a big one. I learned what modals were, which are basically like little views that pop up when you run a command. Everything is built "
         "off of these modals! At the time of writing this, my modals are lik 750+ lines of code that I had to learn how to make by hand. They run off of async events "
         "that are basically like this: you run the /command, the api awaits a response to the little popup that I coded to show up (usually used for like timeouts or bans and stuff), "
-        "and then it does something on submit, like send additional info to a DM or channel. Was very proud once I got my first modal working, even tho most of it was taken from a tutorial in the discord api docs lol. \n"
+        "and then it does something on submit, like send additional info to a DM or channel. Was very proud once I got my first modal working, even tho most of it was taken from a tutorial in the discord api docs lol. \n",
+        ephemeral=True,
+    )
+    await interaction.followup.send(
         "**Working Bot:** This was the tipping point, and the point at which I faced the biggest crossroads. I had finished the working bot, spent a butt load of time into this gift"
         ", and was still not happy with how it had turned out. It looked fine: it could send messages without crashing, the modals were a little uggy but had taken forever, so overall "
         "I thought I had put a monumental amount of time into it. However, while I was coding late at night with my roommates brainstorming different ideas, Eunji and Anna "
@@ -182,7 +188,10 @@ async def changelog(interaction: discord.Interaction):
         "order informaiton in order to do things like reorder common orders, reccomend trends, update delivery times, etc. For a non-cs major, this does not sound that bad. "
         "I think only CS people understand how unbelieveable difficult this is, because your turning your bot from a basic input -> output machine into a fully working full-stack app "
         "with a working database to hold information and a backend to relay frontend commands into changing a backend. At this point, I saw how difficult that would be to code by hand, and "
-        "I gave up. But then I crashed out about it some more with Eunji, who was like 'She deserves the best mason!' and so I started coding again through the night \n"
+        "I gave up. But then I crashed out about it some more with Eunji, who was like 'She deserves the best mason!' and so I started coding again through the night \n",
+        ephemeral=True,
+    )
+    await interaction.followup.send(
         "**Making a Database:** Databases are freakin hard. I go from ez pz land of modifying little parts of pre-written tutorials designed to be easy, all in python, to learning how to code in sequal, creating my own database "
         "and CRUD (create, read, update, delete) functions for everything, figure out how to put it into my spaghetti code like a kindergartner putting the square block into the circle hole over and over, "
         "redoing the entire thing because I learned fly.io isnt powerful enough to do anything in sequel and it could only do a much more limited language called sql lite, "
